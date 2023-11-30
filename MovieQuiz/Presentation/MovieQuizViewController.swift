@@ -24,6 +24,9 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var counterLabel: UILabel!
     
+    @IBOutlet private weak var noButton: UIButton!
+    @IBOutlet private weak var yesButton: UIButton!
+    
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     
@@ -111,6 +114,8 @@ final class MovieQuizViewController: UIViewController {
     
     private func showAnswerResult (isCorrect: Bool) {
         imageView.layer.borderWidth = 8
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
         if isCorrect {
             print("ответ верный")
             correctAnswers += 1
@@ -122,6 +127,8 @@ final class MovieQuizViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.imageView.layer.borderWidth = 0
             self.showNextQuestionOrResults()
+            self.yesButton.isEnabled = true
+            self.noButton.isEnabled = true
         }
     }
         
