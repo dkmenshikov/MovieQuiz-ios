@@ -8,14 +8,10 @@ final class MovieQuizViewController: UIViewController {
         let correctAnswer: Bool
     }
     
-    // вью модель для состояния "Вопрос показан"
     struct QuizStepViewModel {
-      // картинка с афишей фильма с типом UIImage
-      let image: UIImage
-      // вопрос о рейтинге квиза
-      let question: String
-      // строка с порядковым номером этого вопроса (ex. "1/10")
-      let questionNumber: String
+        let image: UIImage
+        let question: String
+        let questionNumber: String
     }
     
     struct QuizResultsViewModel {
@@ -74,16 +70,15 @@ final class MovieQuizViewController: UIViewController {
             correctAnswer: false)
         ]
     
-    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         show(quiz: convert(model: questions[0]))
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 0
+        imageView.layer.cornerRadius = 20
     }
     
-    
-    // метод конвертации, который принимает моковый вопрос и возвращает вью модель для экрана вопроса
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-      // Попробуйте написать код конвертации самостоятельн
         let questionStep = QuizStepViewModel.init(
             image: UIImage.init(named: model.image) ?? UIImage(),
             question: model.text,
@@ -115,10 +110,7 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func showAnswerResult (isCorrect: Bool) {
-        //показывает рамку с ответом
-        imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 8
-        imageView.layer.cornerRadius = 20
         if isCorrect {
             print("ответ верный")
             correctAnswers += 1
@@ -128,15 +120,17 @@ final class MovieQuizViewController: UIViewController {
             imageView.layer.borderColor = UIColor.ypRed.cgColor
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-           // код, который мы хотим вызвать через 1 секунду
             self.imageView.layer.borderWidth = 0
             self.showNextQuestionOrResults()
         }
     }
+        
     
     private func showNextQuestionOrResults () {
         if currentQuestionIndex == questions.count - 1 {
-            let viewModel = QuizResultsViewModel (title: "Этот раунд окончен", text: "Результат \(correctAnswers) правильных ответов", buttonText: "Сыграть еще раз")
+            let viewModel = QuizResultsViewModel (title: "Этот раунд окончен",
+                                                  text: "Результат \(correctAnswers) правильных ответов",
+                                                  buttonText: "Сыграть еще раз")
             show(quiz: viewModel)
         } else {
             currentQuestionIndex += 1
