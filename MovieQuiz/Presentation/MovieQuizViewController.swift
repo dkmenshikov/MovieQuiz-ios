@@ -100,7 +100,10 @@ final class MovieQuizViewController: UIViewController {
         let alert = UIAlertController(title: step.title,
                                       message: step.text,
                                       preferredStyle: .alert)
-        let action = UIAlertAction(title: step.buttonText, style: .default) {_ in
+        let action = UIAlertAction(title: step.buttonText, style: .default) { [weak self] _ in
+            guard let self else {
+                return
+            }
             print("нажатие повторной игры")
             self.correctAnswers = 0
             self.currentQuestionIndex = 0
@@ -124,7 +127,10 @@ final class MovieQuizViewController: UIViewController {
             print("ответ НЕверный")
             imageView.layer.borderColor = UIColor.ypRed.cgColor
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else {
+                return
+            }
             self.imageView.layer.borderWidth = 0
             self.showNextQuestionOrResults()
             self.yesButton.isEnabled = true
