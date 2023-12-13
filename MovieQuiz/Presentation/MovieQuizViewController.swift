@@ -1,7 +1,7 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
-
+    // MARK: - IBOutlets
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var counterLabel: UILabel!
@@ -9,19 +9,26 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private weak var noButton: UIButton!
     @IBOutlet private weak var yesButton: UIButton!
     
+    // MARK: - Свойства класса
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private let questionsAmount: Int = 10
-    
-    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
+    // MARK: - Переменные сторонних сущностей
+    
+    private var questionFactory: QuestionFactoryProtocol?
+    private var alertPresenter: AlertPresenter = AlertPresenter() 
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         questionFactory = QuestionFactory(delegate: self)
         questionFactory?.requestNextQuestion()
+        
+        alertPresenter.delegate = self // DI через свойство. Сделал не через инит для разнообразия
         
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 0
@@ -41,6 +48,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
+    // MARK: - Методы создания и показа модели этапа квиза
+    
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel.init(
@@ -57,25 +66,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         counterLabel.text = step.questionNumber
     }
     
-    private func show(quiz step: QuizResultsViewModel) {
-        let alert = UIAlertController(title: step.title,
-                                      message: step.text,
-                                      preferredStyle: .alert)
-        let action = UIAlertAction(title: step.buttonText, style: .default) { [weak self] _ in
-            guard let self else {
-                return
-            }
-            print("нажатие повторной игры")
-            self.correctAnswers = 0
-            self.currentQuestionIndex = 0
-
-            questionFactory?.requestNextQuestion()
-        }
-        
-        alert.addAction(action)
-        
-        self.present(alert, animated: true, completion: nil)
-    }
+    // MARK: - Метод показа результата ответа
     
     private func showAnswerResult (isCorrect: Bool) {
         imageView.layer.borderWidth = 8
@@ -101,19 +92,29 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
+    // MARK: - Метод показа следующего этапа либо вызова алерта об окончании игры
+    
     private func showNextQuestionOrResults () {
         currentQuestionIndex += 1
         print("значение счетчика вопросов \(currentQuestionIndex)")
         if currentQuestionIndex == questionsAmount {
-            let viewModel = QuizResultsViewModel (title: "Этот раунд окончен",
-                                                  text: "Результат \(correctAnswers) правильных ответов",
-                                                  buttonText: "Сыграть еще раз")
-            show(quiz: viewModel)
+
+            let alertModel: AlertModel = AlertModel(title: "Этот раунд окончен",
+                                                    text: "Результат \(correctAnswers) правильных ответов",
+                                                    buttonText: "Сыграть еще раз",
+                                                    completion: { [weak self] _ in
+                self?.correctAnswers = 0
+                self?.currentQuestionIndex = 0
+                self?.questionFactory?.requestNextQuestion()
+            print("замыкание на алерте отработало, старт новой игры")})
+            
+            alertPresenter.showAlert(alertModel: alertModel)
         } else {
             self.questionFactory?.requestNextQuestion()
         }
     }
-
+    
+    // MARK: - IBAction для кнопок ДА НЕТ
     
     @IBAction func yesButtonClicked(_ sender: Any) {
         print("нажатие ДА")
