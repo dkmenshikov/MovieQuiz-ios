@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var textLabel: UILabel!
@@ -11,25 +11,36 @@ final class MovieQuizViewController: UIViewController {
     
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
-    
     private let questionsAmount: Int = 10
-    private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
+    
+    private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        if let firstQuestion = questionFactory.requestNextQuestion() {
-            currentQuestion = firstQuestion
-            let viewModel = convert(model: firstQuestion)
-            show(quiz: viewModel)
-        }
+        
+        questionFactory = QuestionFactory(delegate: self)
+        questionFactory?.requestNextQuestion()
         
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 0
         imageView.layer.cornerRadius = 20
     }
+    
+    // MARK: - QuestionFactoryDelegate
+    
+    func didRecieveNextQuestion(question: QuizQuestion?) {
+        guard let question else {
+            return
+        }
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: viewModel)
+        }
+    }
+    
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel.init(
@@ -57,12 +68,8 @@ final class MovieQuizViewController: UIViewController {
             print("нажатие повторной игры")
             self.correctAnswers = 0
             self.currentQuestionIndex = 0
-            guard let firstQuestion = questionFactory.requestNextQuestion() else {
-                return
-            }
-            currentQuestion = firstQuestion
-            let viewModel = self.convert(model: firstQuestion)
-            self.show(quiz: viewModel)
+
+            questionFactory?.requestNextQuestion()
         }
         
         alert.addAction(action)
@@ -74,6 +81,7 @@ final class MovieQuizViewController: UIViewController {
         imageView.layer.borderWidth = 8
         yesButton.isEnabled = false
         noButton.isEnabled = false
+        
         if isCorrect {
             print("ответ верный")
             correctAnswers += 1
@@ -94,19 +102,15 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func showNextQuestionOrResults () {
-        if currentQuestionIndex == questionsAmount - 1 {
+        currentQuestionIndex += 1
+        print("значение счетчика вопросов \(currentQuestionIndex)")
+        if currentQuestionIndex == questionsAmount {
             let viewModel = QuizResultsViewModel (title: "Этот раунд окончен",
                                                   text: "Результат \(correctAnswers) правильных ответов",
                                                   buttonText: "Сыграть еще раз")
             show(quiz: viewModel)
         } else {
-            currentQuestionIndex += 1
-            guard let nextQuestion = questionFactory.requestNextQuestion() else {
-                return
-            }
-            currentQuestion = nextQuestion
-            let viewModel = convert(model: nextQuestion)
-            show(quiz: viewModel)
+            self.questionFactory?.requestNextQuestion()
         }
     }
 

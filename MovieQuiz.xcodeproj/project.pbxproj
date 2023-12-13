@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		328CD74A2B29C9B000D52656 /* QuestionFactoryDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328CD7492B29C9B000D52656 /* QuestionFactoryDelegate.swift */; };
 		328EA4342B27226600617FD7 /* QuestionFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328EA4332B27226600617FD7 /* QuestionFactory.swift */; };
 		328EA4372B27901100617FD7 /* QuizStepViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328EA4362B27901100617FD7 /* QuizStepViewModel.swift */; };
 		328EA4392B2790E900617FD7 /* QuizResultsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 328EA4382B2790E900617FD7 /* QuizResultsViewModel.swift */; };
@@ -26,6 +27,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		328CD7492B29C9B000D52656 /* QuestionFactoryDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionFactoryDelegate.swift; sourceTree = "<group>"; };
 		328EA4332B27226600617FD7 /* QuestionFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionFactory.swift; sourceTree = "<group>"; };
 		328EA4362B27901100617FD7 /* QuizStepViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizStepViewModel.swift; sourceTree = "<group>"; };
 		328EA4382B2790E900617FD7 /* QuizResultsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizResultsViewModel.swift; sourceTree = "<group>"; };
@@ -62,6 +64,7 @@
 			children = (
 				328EA4332B27226600617FD7 /* QuestionFactory.swift */,
 				328EA43C2B27BD7F00617FD7 /* QuestionFactoryProtocol.swift */,
+				328CD7492B29C9B000D52656 /* QuestionFactoryDelegate.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -222,6 +225,7 @@
 				AD5EE5DE284D7887003966EF /* UIColor+Extensions.swift in Sources */,
 				AD7AFA552836189F00399704 /* Array+Extensions.swift in Sources */,
 				328EA43D2B27BD7F00617FD7 /* QuestionFactoryProtocol.swift in Sources */,
+				328CD74A2B29C9B000D52656 /* QuestionFactoryDelegate.swift in Sources */,
 				AD1ABAB62831907B00B3E448 /* MovieQuizViewController.swift in Sources */,
 				328EA4372B27901100617FD7 /* QuizStepViewModel.swift in Sources */,
 				328EA43B2B2790FF00617FD7 /* QuizQuestion.swift in Sources */,
