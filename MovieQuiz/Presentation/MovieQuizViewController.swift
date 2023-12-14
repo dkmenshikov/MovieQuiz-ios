@@ -2,6 +2,7 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - IBOutlets
+    
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var counterLabel: UILabel!
@@ -10,6 +11,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private weak var yesButton: UIButton!
     
     // MARK: - Свойства класса
+    
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private let questionsAmount: Int = 10
@@ -19,6 +21,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenter = AlertPresenter() 
+    
+    private var statisticService: StatisticService = StatisticServiceImplementation()
     
     // MARK: - Lifecycle
     
@@ -33,6 +37,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 0
         imageView.layer.cornerRadius = 20
+        
+        //statisticService = StatisticServiceImplementation()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -98,15 +104,25 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         currentQuestionIndex += 1
         print("значение счетчика вопросов \(currentQuestionIndex)")
         if currentQuestionIndex == questionsAmount {
+            
+            statisticService.store(correct: correctAnswers, total: questionsAmount) //передаем в сервис сохранения статистики данные о правильных ответах в этой игре. Метод должен изменить сеттеры проперти класса
+            let alertText = """
+                            Ваш результат \(correctAnswers)/\(questionsAmount)
+                            Количество сыграных квизов: \(statisticService.gamesCount)
+                            Рекорд \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))
+                            Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
+                            """
+            //подготавливаем текст для печати на алерте из компонентов сервиса
 
             let alertModel: AlertModel = AlertModel(title: "Этот раунд окончен",
-                                                    text: "Результат \(correctAnswers) правильных ответов",
+                                                    //text: "Результат \(correctAnswers) правильных ответов",
+                                                    text: alertText,
                                                     buttonText: "Сыграть еще раз",
                                                     completion: { [weak self] _ in
                 self?.correctAnswers = 0
                 self?.currentQuestionIndex = 0
                 self?.questionFactory?.requestNextQuestion()
-            print("замыкание на алерте отработало, старт новой игры")})
+                print("нажатие повторной игры")})
             
             alertPresenter.showAlert(alertModel: alertModel)
         } else {

@@ -10,7 +10,7 @@ import UIKit
 
 class AlertPresenter {
     
-    weak var delegate: MovieQuizViewController?
+    weak var delegate: UIViewController?
     
     func showAlert(alertModel: AlertModel) {
         let alert = UIAlertController(title: alertModel.title,
@@ -20,7 +20,7 @@ class AlertPresenter {
         let action = UIAlertAction(title: alertModel.buttonText, style: .default, handler: alertModel.completion)
         
         alert.addAction(action)
-        print("нажатие повторной игры")
+
         
         delegate?.present(alert, animated: true, completion: nil)
     }
