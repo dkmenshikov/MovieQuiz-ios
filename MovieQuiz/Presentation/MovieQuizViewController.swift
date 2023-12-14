@@ -20,7 +20,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Переменные сторонних сущностей
     
     private var questionFactory: QuestionFactoryProtocol?
-    private var alertPresenter: AlertPresenter = AlertPresenter() 
+    private var alertPresenter: ResultAlertPresenter = ResultAlertPresenter() 
     
     private var statisticService: StatisticService = StatisticServiceImplementation()
     
@@ -38,7 +38,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         imageView.layer.borderWidth = 0
         imageView.layer.cornerRadius = 20
         
-        //statisticService = StatisticServiceImplementation()
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -115,7 +114,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             //подготавливаем текст для печати на алерте из компонентов сервиса
 
             let alertModel: AlertModel = AlertModel(title: "Этот раунд окончен",
-                                                    //text: "Результат \(correctAnswers) правильных ответов",
                                                     text: alertText,
                                                     buttonText: "Сыграть еще раз",
                                                     completion: { [weak self] _ in
