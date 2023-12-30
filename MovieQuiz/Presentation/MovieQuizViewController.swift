@@ -10,6 +10,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private weak var noButton: UIButton!
     @IBOutlet private weak var yesButton: UIButton!
     
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    
     // MARK: - Свойства класса
     
     private var currentQuestionIndex = 0
@@ -29,8 +32,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        questionFactory = QuestionFactory(delegate: self)
-        questionFactory?.requestNextQuestion()
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        setActivityIndicator(isHidden: false)
+        
+        questionFactory?.loadData()
         
         alertPresenter.delegate = self // DI через свойство. Сделал не через инит для разнообразия
         
@@ -40,9 +45,48 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
     }
     
+    // MARK: - Метод установки видимости активити индикатора
+    
+    private func setActivityIndicator(isHidden: Bool) {
+        activityIndicator.isHidden = isHidden
+        if isHidden {
+            activityIndicator.stopAnimating()
+        } else {
+            activityIndicator.startAnimating()
+        }
+    }
+    
+    
+    func didLoadDataFromServer() {
+        setActivityIndicator(isHidden: true)
+        questionFactory?.requestNextQuestion()
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
+    // MARK: - Метод отображения ошибки загрузки
+    
+    private func showNetworkError(message: String) {
+        setActivityIndicator(isHidden: true)
+        
+        let alertModel: AlertModel = AlertModel(title: "Ошибка",
+                                                text: message,
+                                                buttonText: "Попробовать еще раз",
+                                                completion: { [weak self] _ in
+            self?.correctAnswers = 0
+            self?.currentQuestionIndex = 0
+            self?.questionFactory?.requestNextQuestion()
+            print("нажатие повторной попытки загрузки данных с сервера")
+        })
+        
+        alertPresenter.showAlert(alertModel: alertModel)
+    }
+    
     // MARK: - QuestionFactoryDelegate
     
-    func didRecieveNextQuestion(question: QuizQuestion?) {
+    func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question else {
             return
         }
@@ -55,14 +99,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Методы создания и показа модели этапа квиза
     
-    
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel.init(
-            image: UIImage.init(named: model.image) ?? UIImage(),
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)"
-            )
-        return questionStep
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
     private func show(quiz step: QuizStepViewModel) {
@@ -120,7 +161,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 self?.correctAnswers = 0
                 self?.currentQuestionIndex = 0
                 self?.questionFactory?.requestNextQuestion()
-                print("нажатие повторной игры")})
+                print("нажатие повторной игры")
+            })
             
             alertPresenter.showAlert(alertModel: alertModel)
         } else {
