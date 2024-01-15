@@ -15,15 +15,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Свойства класса
     
-    private var currentQuestionIndex = 0
+//    private var currentQuestionIndex = 0
     private var correctAnswers = 0
-    private let questionsAmount: Int = 10
+//    private let questionsAmount: Int = 10
     private var currentQuestion: QuizQuestion?
     
     // MARK: - Переменные сторонних сущностей
     
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: ResultAlertPresenter = ResultAlertPresenter() 
+    private let presenter: MovieQuizPresenter = MovieQuizPresenter()
     
     private var statisticService: StatisticService = StatisticServiceImplementation()
     
@@ -76,7 +77,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                                 buttonText: "Попробовать еще раз",
                                                 completion: { [weak self] _ in
             self?.correctAnswers = 0
-            self?.currentQuestionIndex = 0
+            
+//            self?.currentQuestionIndex = 0
+            self?.presenter.resetQuestionIndex()
             self?.questionFactory?.requestNextQuestion()
             print("нажатие повторной попытки загрузки данных с сервера")
         })
@@ -91,7 +94,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return
         }
         currentQuestion = question
-        let viewModel = convert(model: question)
+//        let viewModel = convert(model: question)
+        let viewModel = presenter.convert(model: question)
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
@@ -99,12 +103,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Методы создания и показа модели этапа квиза
     
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        return QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
-    }
+//    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+//        return QuizStepViewModel(
+//            image: UIImage(data: model.image) ?? UIImage(),
+//            question: model.text,
+//            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+//    }
     
     private func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
@@ -141,13 +145,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Метод показа следующего этапа либо вызова алерта об окончании игры
     
     private func showNextQuestionOrResults () {
-        currentQuestionIndex += 1
-        print("значение счетчика вопросов \(currentQuestionIndex)")
-        if currentQuestionIndex == questionsAmount {
+//        currentQuestionIndex += 1
+        presenter.switchToNextQuestion()
+//        if currentQuestionIndex == questionsAmount {
+        if presenter.isLastQuestion() {
             
-            statisticService.store(correct: correctAnswers, total: questionsAmount) //передаем в сервис сохранения статистики данные о правильных ответах в этой игре. Метод должен изменить сеттеры проперти класса
+            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount) //передаем в сервис сохранения статистики данные о правильных ответах в этой игре. Метод должен изменить сеттеры проперти класса
             let alertText = """
-                            Ваш результат \(correctAnswers)/\(questionsAmount)
+                            Ваш результат \(correctAnswers)/\(presenter.questionsAmount)
                             Количество сыграных квизов: \(statisticService.gamesCount)
                             Рекорд \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))
                             Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
@@ -159,7 +164,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                                     buttonText: "Сыграть еще раз",
                                                     completion: { [weak self] _ in
                 self?.correctAnswers = 0
-                self?.currentQuestionIndex = 0
+//                self?.currentQuestionIndex = 0
+                self?.presenter.resetQuestionIndex()
                 self?.questionFactory?.requestNextQuestion()
                 print("нажатие повторной игры")
             })
