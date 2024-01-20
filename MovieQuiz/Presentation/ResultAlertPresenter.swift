@@ -10,7 +10,7 @@ import UIKit
 
 class ResultAlertPresenter {
     
-    weak var delegate: UIViewController?
+    weak var delegate: MovieQuizViewControllerProtocol?
     
     func showAlert(alertModel: AlertModel) {
         let alert = UIAlertController(title: alertModel.title,

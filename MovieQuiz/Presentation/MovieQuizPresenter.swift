@@ -14,7 +14,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var correctAnswers: Int = 0
 
     // MARK: - Переменные сторонних сущностей
-    private weak var viewController: MovieQuizViewController?
+//    private weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     private var statisticService: StatisticService = StatisticServiceImplementation()
     var alertPresenter: ResultAlertPresenter = ResultAlertPresenter()
     private var questionFactory: QuestionFactoryProtocol?
@@ -23,7 +24,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestionIndex: Int = 0
     private let questionsAmount: Int = 10
     
-    init(viewController: MovieQuizViewController) {
+    init(viewController: MovieQuizViewControllerProtocol) {
             self.viewController = viewController
             alertPresenter.delegate = viewController
             questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
@@ -59,7 +60,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 
     }
     
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
         return QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
@@ -115,7 +116,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     
-    func proceedToNextQuestionOrResults () {
+    private func proceedToNextQuestionOrResults () {
         
         switchToNextQuestion()
         
