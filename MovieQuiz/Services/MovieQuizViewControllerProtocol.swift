@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-protocol MovieQuizViewControllerProtocol: /*AnyObject, */UIViewController {
+protocol MovieQuizViewControllerProtocol: UIViewController {
     func showStep(quiz step: QuizStepViewModel)
     func showResult(quiz result: AlertModel)
     

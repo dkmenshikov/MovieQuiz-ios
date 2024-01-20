@@ -14,7 +14,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var correctAnswers: Int = 0
 
     // MARK: - Переменные сторонних сущностей
-//    private weak var viewController: MovieQuizViewController?
+
     private weak var viewController: MovieQuizViewControllerProtocol?
     private var statisticService: StatisticService = StatisticServiceImplementation()
     var alertPresenter: ResultAlertPresenter = ResultAlertPresenter()
