@@ -1,6 +1,7 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+    
     // MARK: - IBOutlets
     
     @IBOutlet private weak var imageView: UIImageView!
@@ -16,17 +17,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Свойства класса
     
 //    private var currentQuestionIndex = 0
-    private var correctAnswers = 0
+//    var correctAnswers = 0
 //    private let questionsAmount: Int = 10
-    private var currentQuestion: QuizQuestion?
+//    private var currentQuestion: QuizQuestion?
     
     // MARK: - Переменные сторонних сущностей
     
-    private var questionFactory: QuestionFactoryProtocol?
-    private var alertPresenter: ResultAlertPresenter = ResultAlertPresenter() 
+    var questionFactory: QuestionFactoryProtocol?
+//    private var alertPresenter: ResultAlertPresenter = ResultAlertPresenter()
     private let presenter: MovieQuizPresenter = MovieQuizPresenter()
     
-    private var statisticService: StatisticService = StatisticServiceImplementation()
+//    private var statisticService: StatisticService = StatisticServiceImplementation()
     
     // MARK: - Lifecycle
     
@@ -38,7 +39,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         questionFactory?.loadData()
         
-        alertPresenter.delegate = self // DI через свойство. Сделал не через инит для разнообразия
+//        alertPresenter.delegate = self // DI через свойство. Сделал не через инит для разнообразия
+        presenter.viewController = self
         
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 0
@@ -76,29 +78,32 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                                                 text: message,
                                                 buttonText: "Попробовать еще раз",
                                                 completion: { [weak self] _ in
-            self?.correctAnswers = 0
+//            self?.presenter.correctAnswers = 0
             
 //            self?.currentQuestionIndex = 0
-            self?.presenter.resetQuestionIndex()
+            self?.presenter.restartGame()
             self?.questionFactory?.requestNextQuestion()
             print("нажатие повторной попытки загрузки данных с сервера")
         })
         
-        alertPresenter.showAlert(alertModel: alertModel)
+        presenter.alertPresenter.showAlert(alertModel: alertModel)
     }
     
     // MARK: - QuestionFactoryDelegate
-    
+//    
+//    func didReceiveNextQuestion(question: QuizQuestion?) {
+//        guard let question else {
+//            return
+//        }
+//        currentQuestion = question
+////        let viewModel = convert(model: question)
+//        let viewModel = presenter.convert(model: question)
+//        DispatchQueue.main.async { [weak self] in
+//            self?.show(quiz: viewModel)
+//        }
+//    }
     func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question else {
-            return
-        }
-        currentQuestion = question
-//        let viewModel = convert(model: question)
-        let viewModel = presenter.convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.show(quiz: viewModel)
-        }
+        presenter.didReceiveNextQuestion(question: question)
     }
     
     // MARK: - Методы создания и показа модели этапа квиза
@@ -110,7 +115,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 //            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
 //    }
     
-    private func show(quiz step: QuizStepViewModel) {
+    func show(quiz step: QuizStepViewModel) {
         imageView.image = step.image
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
@@ -118,14 +123,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Метод показа результата ответа
     
-    private func showAnswerResult (isCorrect: Bool) {
+    func showAnswerResult (isCorrect: Bool) {
         imageView.layer.borderWidth = 8
         yesButton.isEnabled = false
         noButton.isEnabled = false
         
         if isCorrect {
             print("ответ верный")
-            correctAnswers += 1
+//            presenter.correctAnswers += 1
             imageView.layer.borderColor = UIColor.ypGreen.cgColor
         } else {
             print("ответ НЕверный")
@@ -136,7 +141,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 return
             }
             self.imageView.layer.borderWidth = 0
-            self.showNextQuestionOrResults()
+            self.presenter.showNextQuestionOrResults()
             self.yesButton.isEnabled = true
             self.noButton.isEnabled = true
         }
@@ -144,52 +149,56 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Метод показа следующего этапа либо вызова алерта об окончании игры
     
-    private func showNextQuestionOrResults () {
-//        currentQuestionIndex += 1
-        presenter.switchToNextQuestion()
-//        if currentQuestionIndex == questionsAmount {
-        if presenter.isLastQuestion() {
-            
-            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount) //передаем в сервис сохранения статистики данные о правильных ответах в этой игре. Метод должен изменить сеттеры проперти класса
-            let alertText = """
-                            Ваш результат \(correctAnswers)/\(presenter.questionsAmount)
-                            Количество сыграных квизов: \(statisticService.gamesCount)
-                            Рекорд \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))
-                            Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
-                            """
-            //подготавливаем текст для печати на алерте из компонентов сервиса
-
-            let alertModel: AlertModel = AlertModel(title: "Этот раунд окончен",
-                                                    text: alertText,
-                                                    buttonText: "Сыграть еще раз",
-                                                    completion: { [weak self] _ in
-                self?.correctAnswers = 0
-//                self?.currentQuestionIndex = 0
-                self?.presenter.resetQuestionIndex()
-                self?.questionFactory?.requestNextQuestion()
-                print("нажатие повторной игры")
-            })
-            
-            alertPresenter.showAlert(alertModel: alertModel)
-        } else {
-            self.questionFactory?.requestNextQuestion()
-        }
-    }
+//    private func showNextQuestionOrResults () {
+////        currentQuestionIndex += 1
+//        presenter.switchToNextQuestion()
+////        if currentQuestionIndex == questionsAmount {
+//        if presenter.isLastQuestion() {
+//            
+//            statisticService.store(correct: correctAnswers, total: presenter.questionsAmount) //передаем в сервис сохранения статистики данные о правильных ответах в этой игре. Метод должен изменить сеттеры проперти класса
+//            let alertText = """
+//                            Ваш результат \(correctAnswers)/\(presenter.questionsAmount)
+//                            Количество сыграных квизов: \(statisticService.gamesCount)
+//                            Рекорд \(statisticService.bestGame.correct)/\(statisticService.bestGame.total) (\(statisticService.bestGame.date.dateTimeString))
+//                            Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%
+//                            """
+//            //подготавливаем текст для печати на алерте из компонентов сервиса
+//
+//            let alertModel: AlertModel = AlertModel(title: "Этот раунд окончен",
+//                                                    text: alertText,
+//                                                    buttonText: "Сыграть еще раз",
+//                                                    completion: { [weak self] _ in
+//                self?.correctAnswers = 0
+////                self?.currentQuestionIndex = 0
+//                self?.presenter.resetQuestionIndex()
+//                self?.questionFactory?.requestNextQuestion()
+//                print("нажатие повторной игры")
+//            })
+//            
+//            alertPresenter.showAlert(alertModel: alertModel)
+//        } else {
+//            self.questionFactory?.requestNextQuestion()
+//        }
+//    }
     
     // MARK: - IBAction для кнопок ДА НЕТ
     
     @IBAction func yesButtonClicked(_ sender: Any) {
         print("нажатие ДА")
-        if let currentQuestion {
-            showAnswerResult(isCorrect: currentQuestion.correctAnswer)
-        }
+//        if let currentQuestion {
+//            showAnswerResult(isCorrect: currentQuestion.correctAnswer)
+//        }
+//        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonClicked()
     }
     
     @IBAction func noButtonClicked(_ sender: Any) {
         print("нажатие НЕТ")
-        if let currentQuestion {
-            showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
-        }
+//        if let currentQuestion {
+//            showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
+//        }
+//        presenter.currentQuestion = currentQuestion
+        presenter.noButtonClicked()
     }
     
 }
