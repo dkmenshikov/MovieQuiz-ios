@@ -10,12 +10,14 @@ import UIKit
 
 class ResultAlertPresenter {
     
-    weak var delegate: UIViewController?
+    weak var delegate: MovieQuizViewControllerProtocol?
     
     func showAlert(alertModel: AlertModel) {
         let alert = UIAlertController(title: alertModel.title,
                                       message: alertModel.text,
                                       preferredStyle: .alert)
+
+        alert.view.accessibilityIdentifier = "Alert"
         
         let action = UIAlertAction(title: alertModel.buttonText, style: .default, handler: alertModel.completion)
         
