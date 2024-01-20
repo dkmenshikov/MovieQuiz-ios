@@ -65,10 +65,15 @@ final class MovieQuizViewController: UIViewController {
     
     // MARK: - Метод показа модели этапа квиза
     
-    func show(quiz step: QuizStepViewModel) {
+    func showStep(quiz step: QuizStepViewModel) {
         imageView.image = step.image
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
+    }
+    
+    func showResult(quiz result: AlertModel) {
+        presenter?.alertPresenter.showAlert(alertModel: result)
+        print ("Показ алерта")
     }
     
     

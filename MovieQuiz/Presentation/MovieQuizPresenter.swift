@@ -25,7 +25,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     init(viewController: MovieQuizViewController) {
             self.viewController = viewController
-            
+            alertPresenter.delegate = viewController
             questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
             questionFactory?.loadData()
             viewController.setActivityIndicator(isHidden: false)
@@ -99,7 +99,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         currentQuestion = question
         let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
-            self?.viewController?.show(quiz: viewModel)
+            self?.viewController?.showStep(quiz: viewModel)
         }
     }
     
@@ -135,12 +135,9 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
                                                     buttonText: "Сыграть еще раз",
                                                     completion: { [weak self] _ in
                 self?.restartGame()
-                self?.questionFactory?.requestNextQuestion()
                 print("нажатие повторной игры")
             })
-            alertPresenter.delegate = viewController
-            alertPresenter.showAlert(alertModel: alertModel)
-            print ("Показ алерта")
+            viewController?.showResult(quiz: alertModel)
         } else {
             self.questionFactory?.requestNextQuestion()
         }
