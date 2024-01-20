@@ -9,21 +9,19 @@ import Foundation
 import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
-
     
-    
-    var currentQuestion: QuizQuestion?
-    var correctAnswers: Int = 0
+    private var currentQuestion: QuizQuestion?
+    private var correctAnswers: Int = 0
 
     // MARK: - Переменные сторонних сущностей
-    weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewController?
     private var statisticService: StatisticService = StatisticServiceImplementation()
     var alertPresenter: ResultAlertPresenter = ResultAlertPresenter()
-    var questionFactory: QuestionFactoryProtocol?
+    private var questionFactory: QuestionFactoryProtocol?
 
     
     private var currentQuestionIndex: Int = 0
-    let questionsAmount: Int = 10
+    private let questionsAmount: Int = 10
     
     init(viewController: MovieQuizViewController) {
             self.viewController = viewController
@@ -61,7 +59,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
 
     }
     
-    func convert(model: QuizQuestion) -> QuizStepViewModel {
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
         return QuizStepViewModel(
             image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
@@ -89,7 +87,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         if isCorrect {
             correctAnswers += 1
         }
-        viewController?.showAnswerResult(isCorrect: isCorrect)
+        proceedWithAnswer(isCorrect: isCorrect)
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -105,13 +103,24 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
-    func showNextQuestionOrResults () {
-//        currentQuestionIndex += 1
+    
+    func proceedWithAnswer(isCorrect: Bool) {
+            
+        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            self.proceedToNextQuestionOrResults()
+        }
+    }
+    
+    
+    func proceedToNextQuestionOrResults () {
+        
         switchToNextQuestion()
-//        if currentQuestionIndex == questionsAmount {
+        
         if isLastQuestion() {
             print ("Последний вопрос")
-            
             statisticService.store(correct: correctAnswers, total: questionsAmount) //передаем в сервис сохранения статистики данные о правильных ответах в этой игре. Метод должен изменить сеттеры проперти класса
             let alertText = """
                             Ваш результат \(correctAnswers)/\(questionsAmount)
@@ -125,8 +134,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
                                                     text: alertText,
                                                     buttonText: "Сыграть еще раз",
                                                     completion: { [weak self] _ in
-//                self?.correctAnswers = 0
-//                self?.currentQuestionIndex = 0
                 self?.restartGame()
                 self?.questionFactory?.requestNextQuestion()
                 print("нажатие повторной игры")
