@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+final class MovieQuizViewController: UIViewController {
     
     // MARK: - IBOutlets
     
@@ -23,9 +23,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Переменные сторонних сущностей
     
-    var questionFactory: QuestionFactoryProtocol?
+//    var questionFactory: QuestionFactoryProtocol?
 //    private var alertPresenter: ResultAlertPresenter = ResultAlertPresenter()
-    private let presenter: MovieQuizPresenter = MovieQuizPresenter()
+    private var presenter: MovieQuizPresenter?
     
 //    private var statisticService: StatisticService = StatisticServiceImplementation()
     
@@ -34,13 +34,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        presenter = MovieQuizPresenter(viewController: self)
+        
+//        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         setActivityIndicator(isHidden: false)
         
-        questionFactory?.loadData()
+//        questionFactory?.loadData()
         
 //        alertPresenter.delegate = self // DI через свойство. Сделал не через инит для разнообразия
-        presenter.viewController = self
+//        presenter.viewController = self
         
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 0
@@ -50,7 +52,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - Метод установки видимости активити индикатора
     
-    private func setActivityIndicator(isHidden: Bool) {
+    func setActivityIndicator(isHidden: Bool) {
         activityIndicator.isHidden = isHidden
         if isHidden {
             activityIndicator.stopAnimating()
@@ -60,18 +62,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     
-    func didLoadDataFromServer() {
-        setActivityIndicator(isHidden: true)
-        questionFactory?.requestNextQuestion()
-    }
-
-    func didFailToLoadData(with error: Error) {
-        showNetworkError(message: error.localizedDescription)
-    }
+//    func didLoadDataFromServer() {
+//        setActivityIndicator(isHidden: true)
+//        questionFactory?.requestNextQuestion()
+//    }
+//
+//    func didFailToLoadData(with error: Error) {
+//        showNetworkError(message: error.localizedDescription)
+//    }
     
     // MARK: - Метод отображения ошибки загрузки
     
-    private func showNetworkError(message: String) {
+    func showNetworkError(message: String) {
         setActivityIndicator(isHidden: true)
         
         let alertModel: AlertModel = AlertModel(title: "Ошибка",
@@ -81,12 +83,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 //            self?.presenter.correctAnswers = 0
             
 //            self?.currentQuestionIndex = 0
-            self?.presenter.restartGame()
-            self?.questionFactory?.requestNextQuestion()
+            self?.presenter?.restartGame()
+//            self?.presenter?.questionFactory?.requestNextQuestion()
             print("нажатие повторной попытки загрузки данных с сервера")
         })
         
-        presenter.alertPresenter.showAlert(alertModel: alertModel)
+        presenter?.alertPresenter.showAlert(alertModel: alertModel)
     }
     
     // MARK: - QuestionFactoryDelegate
@@ -102,9 +104,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 //            self?.show(quiz: viewModel)
 //        }
 //    }
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        presenter.didReceiveNextQuestion(question: question)
-    }
+//    func didReceiveNextQuestion(question: QuizQuestion?) {
+//        presenter.didReceiveNextQuestion(question: question)
+//    }
     
     // MARK: - Методы создания и показа модели этапа квиза
     
@@ -141,7 +143,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
                 return
             }
             self.imageView.layer.borderWidth = 0
-            self.presenter.showNextQuestionOrResults()
+            self.presenter?.showNextQuestionOrResults()
             self.yesButton.isEnabled = true
             self.noButton.isEnabled = true
         }
@@ -189,7 +191,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 //            showAnswerResult(isCorrect: currentQuestion.correctAnswer)
 //        }
 //        presenter.currentQuestion = currentQuestion
-        presenter.yesButtonClicked()
+        presenter?.yesButtonClicked()
     }
     
     @IBAction func noButtonClicked(_ sender: Any) {
@@ -198,7 +200,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 //            showAnswerResult(isCorrect: !currentQuestion.correctAnswer)
 //        }
 //        presenter.currentQuestion = currentQuestion
-        presenter.noButtonClicked()
+        presenter?.noButtonClicked()
     }
     
 }

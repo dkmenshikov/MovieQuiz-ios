@@ -8,7 +8,9 @@
 import Foundation
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
+
+    
     
     var currentQuestion: QuizQuestion?
     var correctAnswers: Int = 0
@@ -17,10 +19,29 @@ final class MovieQuizPresenter {
     weak var viewController: MovieQuizViewController?
     private var statisticService: StatisticService = StatisticServiceImplementation()
     var alertPresenter: ResultAlertPresenter = ResultAlertPresenter()
+    var questionFactory: QuestionFactoryProtocol?
 
     
     private var currentQuestionIndex: Int = 0
     let questionsAmount: Int = 10
+    
+    init(viewController: MovieQuizViewController) {
+            self.viewController = viewController
+            
+            questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+            questionFactory?.loadData()
+            viewController.setActivityIndicator(isHidden: false)
+        }
+    
+    
+    func didLoadDataFromServer() {
+        viewController?.setActivityIndicator(isHidden: true)
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        viewController?.showNetworkError(message: error.localizedDescription)
+    }
     
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount 
@@ -29,6 +50,7 @@ final class MovieQuizPresenter {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
+        questionFactory?.requestNextQuestion()
         print("значение счетчика вопросов \(currentQuestionIndex)")
 
     }
@@ -77,7 +99,6 @@ final class MovieQuizPresenter {
             return
         }
         currentQuestion = question
-//        let viewModel = convert(model: question)
         let viewModel = convert(model: question)
         DispatchQueue.main.async { [weak self] in
             self?.viewController?.show(quiz: viewModel)
@@ -107,14 +128,14 @@ final class MovieQuizPresenter {
 //                self?.correctAnswers = 0
 //                self?.currentQuestionIndex = 0
                 self?.restartGame()
-                self?.viewController?.questionFactory?.requestNextQuestion()
+                self?.questionFactory?.requestNextQuestion()
                 print("нажатие повторной игры")
             })
             alertPresenter.delegate = viewController
             alertPresenter.showAlert(alertModel: alertModel)
             print ("Показ алерта")
         } else {
-            self.viewController?.questionFactory?.requestNextQuestion()
+            self.questionFactory?.requestNextQuestion()
         }
     }
 }
